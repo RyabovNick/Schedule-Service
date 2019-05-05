@@ -103,4 +103,129 @@ router.route('/teachers/:fio').get((req, res, next) => {
   });
 });
 
+router.route('/groups/:group').get((req, res, next) => {
+  pool.connect(err => {
+    if (err) res.sendStatus(400);
+
+    const request = new sql.Request(pool);
+    request.input('group', sql.NVarChar, req.params.group);
+    request.query(
+      `
+      Select TOP (1000)
+	CASE WHEN
+		first_week.[Day] is null THEN second_week.[Day]
+	ELSE first_week.[Day] END as [Day],
+	CASE WHEN
+		first_week.[Lesson_ID] is null THEN second_week.[Lesson_ID]
+	ELSE first_week.[Lesson_ID] END as [Lesson_ID],
+	CASE WHEN
+		first_week.[Subject_Type] = second_week.[Subject_Type] THEN first_week.[Subject_Type]
+		WHEN first_week.[Subject_Type] is null and second_week.[Subject_Type] is not null THEN second_week.[Subject_Type]
+		WHEN first_week.[Subject_Type] is not null and second_week.[Subject_Type] is null THEN first_week.[Subject_Type]
+	END as [Subject_Type],
+	CASE 
+		WHEN first_week.[Lecturer] = second_week.[Lecturer] and first_week.[Subject] = second_week.[Subject] and first_week.[Cabinet] = second_week.[Cabinet]
+			THEN CONCAT(first_week.[Cabinet], ' ', first_week.[Subject], ' ', first_week.[Lecturer])
+		WHEN first_week.[Lecturer] is null and second_week.[Lecturer] is not null and first_week.[Subject] is null and second_week.[Subject] is not null and first_week.[Cabinet] is null and second_week.[Cabinet] is not null
+			THEN CONCAT('/ ', second_week.[Cabinet], ' ', second_week.[Subject], ' ', second_week.[Lecturer])
+		WHEN first_week.[Lecturer] is not null and second_week.[Lecturer] is null and first_week.[Subject] is not null and second_week.[Subject] is null and first_week.[Cabinet] is not null and second_week.[Cabinet] is null
+			THEN CONCAT(first_week.[Cabinet], ' ', first_week.[Subject], ' ', first_week.[Lecturer], ' /')
+		WHEN first_week.[Lecturer] is not null and second_week.[Lecturer] is not null and first_week.[Subject] is not null and second_week.[Subject] is not null and first_week.[Cabinet] is not null and second_week.[Cabinet] is not null
+			THEN CONCAT(first_week.[Cabinet], ' ', first_week.[Subject], ' ', first_week.[Lecturer], ' / ', second_week.[Cabinet], ' ', second_week.[Subject], ' ', second_week.[Lecturer])
+	END as full_lesson
+		
+FROM
+(Select days.*,
+	group_pairs.[Lesson_ID],
+	group_pairs.[Lecturer],
+	group_pairs.[Lesson],
+	group_pairs.[Subject],
+	group_pairs.[Subject_Type],
+	group_pairs.[Cabinet]
+FROM [UniASR].[dbo].[Days] as days
+LEFT JOIN (
+SELECT [Lesson_ID]
+      ,[Day_Number]  AS [Day]
+      ,[Lesson]
+      ,[_Group] AS [Group]
+      ,[_Subject] AS [Subject]
+      ,[_Subject_Type] AS [Subject_Type]
+      ,[Lecturer]
+      ,[Cabinet]
+      ,[Cabinet_Type]
+  FROM [UniASR].[dbo].[аср_Расписание]
+  where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, [finish])
+  and [_Group] = @group and [Day_Number] between 1 and 7
+  ) as group_pairs ON days.[Day] = group_pairs.[Day]
+) as first_week
+FULL OUTER JOIN
+(
+SELECT [Lesson_ID]
+      ,[Day_Number] - 7 AS [Day]
+      ,[Lesson]
+      ,[_Group] AS [Group]
+      ,[_Subject] AS [Subject]
+      ,[_Subject_Type] AS [Subject_Type]
+      ,[Lecturer]
+      ,[Cabinet]
+      ,[Cabinet_Type]
+  FROM [UniASR].[dbo].[аср_Расписание]
+  where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, [finish])
+  and [_Group] = @group and [Day_Number] between 8 and 14
+) as second_week ON first_week.[Day] = second_week.[Day] AND first_week.[Lesson] = second_week.[Lesson]
+order by [Day], [Lesson_ID]
+    
+    `,
+      (err, result) => {
+        if (err) res.sendStatus(400);
+
+        let getSchedule = result.recordset;
+
+        let i;
+        let schedule = [];
+        for (i = 0; i < result.recordset.length; i++) {
+          if (getSchedule[i].Lesson_ID === null) schedule.push(getSchedule[i]);
+          else {
+            // save current day
+            let day = getSchedule[i].Day;
+            let lessons = [];
+            while (true) {
+              lessons.push(getSchedule[i]);
+              if (getSchedule[i + 1].Day !== day) break;
+              else i++;
+            }
+            schedule.push({ Day: day, lessons });
+          }
+        }
+        pool.close();
+        res.send(schedule);
+      },
+    );
+  });
+});
+
+router.route('/teachers').get((req, res, next) => {
+  pool.connect(err => {
+    if (err) res.sendStatus(400);
+
+    const request = new sql.Request(pool);
+    request.query(
+      `
+      SELECT distinct TOP(1000) 
+      [Lecturer_ID] as ID
+      ,[Lecturer]
+        FROM [UniASR].[dbo].[аср_Расписание]
+        where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, [finish])
+        order by [Lecturer]
+    `,
+      (err, result) => {
+        if (err) res.sendStatus(400);
+
+        pool.close();
+        res.send(result.recordset);
+      },
+    );
+  });
+});
+
 module.exports = router;
