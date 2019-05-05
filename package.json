@@ -1,0 +1,31 @@
+{
+  "name": "schedule-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RyabovNick/Schedule-Service.git"
+  },
+  "author": "Ryabov Nick",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RyabovNick/Schedule-Service/issues"
+  },
+  "homepage": "https://github.com/RyabovNick/Schedule-Service#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.0.0",
+    "errorhandler": "^1.5.0",
+    "express": "^4.16.4",
+    "fs-extra": "^7.0.1",
+    "helmet": "^3.17.0",
+    "https": "^1.0.0",
+    "morgan": "^1.9.1",
+    "mssql": "^5.1.0",
+    "winston": "^3.2.1"
+  }
+}
