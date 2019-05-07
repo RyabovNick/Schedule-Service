@@ -228,4 +228,63 @@ router.route('/teachers').get((req, res, next) => {
   });
 });
 
+router.route('/groups').get((req, res, next) => {
+  pool.connect(err => {
+    if (err) res.sendStatus(400);
+
+    const request = new sql.Request(pool);
+    request.input('group', sql.NVarChar, req.params.group);
+    request.query(
+      `
+      SELECT distinct [Caf], [Group]
+      FROM (
+		Select Case 
+			when [Facutet] is null THEN 'Не указана'
+			ELSE [Facutet]
+			END as [Caf], [_Group] as [Group]
+		From [UniASR].[dbo].[аср_Расписание]
+		where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, [finish])
+	  ) as r
+	order by [Caf], [Group]
+    `,
+      (err, result) => {
+        if (err) res.sendStatus(400);
+
+        let getGroups = result.recordset;
+
+        let i;
+        let groupsAll = [];
+        try {
+          for (i = 0; i < getGroups.length; i++) {
+            let caf = [];
+            let cafNow = getGroups[i].Caf;
+            while (true) {
+              let course = getGroups[i].Group.slice(0, 1);
+              let groups = [];
+              while (true) {
+                groups.push({ group: getGroups[i].Group });
+                if (
+                  i + 1 >= getGroups.length ||
+                  getGroups[i + 1].Group.slice(0, 1) !== course
+                )
+                  break;
+                else i++;
+              }
+              caf.push({ course, groups });
+              if (i + 1 >= getGroups.length || getGroups[i + 1].Caf !== cafNow)
+                break;
+              else i++;
+            }
+            groupsAll.push({ caf: cafNow, courses: caf });
+          }
+          pool.close();
+          res.send(groupsAll);
+        } catch (err) {
+          res.sendStatus(400);
+        }
+      },
+    );
+  });
+});
+
 module.exports = router;
