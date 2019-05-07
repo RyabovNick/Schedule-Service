@@ -2,12 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const errorhandler = require('errorhandler');
-const sql = require('mssql');
 const https = require('https');
 const helmet = require('helmet');
 const cors = require('cors');
 const logger = require('./lib/logger');
-const pool = require('./config/config');
 
 const app = express();
 app.use(helmet());
@@ -61,14 +59,14 @@ if (process.env.NODE_ENV === 'development') {
     console.log('Listening on port ' + server.address().port);
   });
 } else {
-  const sslOptions = {
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.crt'),
-  };
   // const sslOptions = {
-  //   pfx: fs.readFileSync('./sslcert.pfx'),
-  //   passphrase: process.env.SSL_PASS,
+  //   key: fs.readFileSync('server.key'),
+  //   cert: fs.readFileSync('server.crt'),
   // };
+  const sslOptions = {
+    pfx: fs.readFileSync('./sslcert.pfx'),
+    passphrase: process.env.SSL_PASS,
+  };
 
   https.createServer(sslOptions, app).listen(process.env.PORT || 3000, () => {
     console.log(`Listening on ${process.env.PORT}`);
