@@ -5,7 +5,7 @@ const errorhandler = require('errorhandler');
 const https = require('https');
 const helmet = require('helmet');
 const cors = require('cors');
-const logger = require('./lib/logger');
+const { logger } = require('./lib/logger');
 
 const app = express();
 app.use(helmet());
@@ -22,7 +22,7 @@ app.use(require('./routes'));
 app.use((req, res, next) => {
   let err = new Error('Not Found');
   err.status = 404;
-  //logger.log('error', 'Error Not Found', { err });
+  logger.log('error', 'Error Not Found', { err });
   next(err);
 });
 
@@ -59,13 +59,9 @@ if (process.env.NODE_ENV === 'development') {
     console.log('Listening on port ' + server.address().port);
   });
 } else {
-  // const sslOptions = {
-  //   key: fs.readFileSync('server.key'),
-  //   cert: fs.readFileSync('server.crt'),
-  // };
   const sslOptions = {
-    pfx: fs.readFileSync('./sslcert.pfx'),
-    passphrase: process.env.SSL_PASS,
+    key: fs.readFileSync('./ssl/server.key'),
+    cert: fs.readFileSync('./ssl/server.cer'),
   };
 
   https.createServer(sslOptions, app).listen(process.env.PORT || 3000, () => {
