@@ -5,6 +5,7 @@ const errorhandler = require('errorhandler');
 const https = require('https');
 const helmet = require('helmet');
 const cors = require('cors');
+const fs = require('fs');
 const { logger } = require('./lib/logger');
 
 const app = express();
