@@ -36,5 +36,6 @@ router.use(
 );
 
 router.use('/api', require('./schedule'));
+router.use('/api/info', require('./info'));
 
 module.exports = router;

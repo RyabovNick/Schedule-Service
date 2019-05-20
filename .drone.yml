@@ -30,6 +30,8 @@ steps:
         from_secret: DB_SERVER
       DB_DATABASE:
         from_secret: DB_DATABASE
+      DB_DATABASE_PROF:
+        from_secret: DB_DATABASE_PROF
       PORT: 3000
     settings:
       build_args_from_env:
@@ -38,11 +40,12 @@ steps:
       - DB_PASS
       - DB_SERVER
       - DB_DATABASE
+      - DB_DATABASE_PROF
       - PORT
     commands:
       - docker container stop schedule_service || true && docker rm schedule_service || true
       - docker build -t nick/schedule_service .
-      - docker run -v /home/schedule_service_logs:/home/node/schedule_service/logs -v /home/ssl:/home/node/schedule_service/ssl -e NODE_ENV=$NODE_ENV -e DB_USER=$DB_USER -e DB_PASS=$DB_PASS -e DB_SERVER=$DB_SERVER -e DB_DATABASE=$DB_DATABASE -e PORT=$PORT -p 8447:3000 -d --name=schedule_service nick/schedule_service
+      - docker run -v /home/schedule_service_logs:/home/node/schedule_service/logs -v /home/ssl:/home/node/schedule_service/ssl -e NODE_ENV=$NODE_ENV -e DB_USER=$DB_USER -e DB_PASS=$DB_PASS -e DB_SERVER=$DB_SERVER -e DB_DATABASE=$DB_DATABASE -e DB_DATABASE_PROF=$DB_DATABASE_PROF -e PORT=$PORT -p 8447:3000 -d --name=schedule_service nick/schedule_service
 
   - name: telegram
     image: appleboy/drone-telegram:latest
