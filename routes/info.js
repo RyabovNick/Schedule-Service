@@ -7,13 +7,6 @@ router.route('/groups/:group').get((req, res, next) => {
     if (err) res.sendStatus(400);
 
     // ищем какой сейчас учебный год (2018-2019 - нам надо 1-ое)
-    const now = new Date();
-    let year = null;
-    if (now.getMonth() + 1 <= 7) {
-      year = now.getFullYear() - 1;
-    } else {
-      year = now.getFullYear();
-    }
 
     const request = new sql.Request(pool);
     request.input('group', sql.NVarChar, req.params.group);
@@ -42,7 +35,6 @@ router.route('/groups/:group').get((req, res, next) => {
       FROM [UniversityPROF].[dbo].[су_ИнформацияОСтудентах]
       where [Группа] = @group
         and [Статус] = 'Является студентом'
-        and [Учебный_Год] = @year
       order by fio
     `,
       (err, result) => {
