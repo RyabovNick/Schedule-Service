@@ -52,7 +52,12 @@ router.route('/teachers/:fio').get((req, res, next) => {
       CASE 
           WHEN first_week.[Groups] is not null and second_week.[Groups] is null THEN null
           ELSE second_week.[Groups]
-        END as [Groups_short_sw]
+        END as [Groups_short_sw],
+        CASE
+          WHEN first_week.[Cabinet] = second_week.[Cabinet] and first_week.[Subject] = second_week.[Subject] and first_week.[Groups] = second_week.[Groups]
+          THEN 0
+          ELSE 1
+        END as dif_weeks
     FROM (
     SELECT days.*, lect_pairs.[Lesson], lect_pairs.[Lecturer], lect_pairs.[Subject], lect_pairs.[Cabinet], lect_pairs.[Subject_Type], lect_pairs.[Groups]
     FROM [UniASR].[dbo].[Days] as days
@@ -180,7 +185,12 @@ router.route('/groups/:group').get((req, res, next) => {
 	CASE
 		WHEN second_week.[Lecturer] is null THEN null
 		ELSE second_week.[Lecturer]
-	END as lecturer_sw
+	END as lecturer_sw,
+	CASE
+		WHEN first_week.[Cabinet] = second_week.[Cabinet] and first_week.[Subject] = second_week.[Subject] and first_week.[Lecturer] = second_week.[Lecturer]
+		THEN 0
+		ELSE 1
+	END as dif_weeks
 		
 FROM
 (Select days.*,
