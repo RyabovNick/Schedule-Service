@@ -70,7 +70,6 @@ router.route('/teacher/:fio').get((req, res, next) => {
         ,[Кафедра] as caf
         ,[Должность] as position
         ,[Стаж] as [exp]
-        ,[Фотография] as photo
       FROM [UniversityPROF].[dbo].[су_СписокППС]
       where [ФИО] = @fio
       order by exp desc

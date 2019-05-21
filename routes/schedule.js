@@ -28,7 +28,31 @@ router.route('/teachers/:fio').get((req, res, next) => {
         WHEN first_week.[Groups] is null and second_week.[Groups] is not null THEN CONCAT('/ ', second_week.Cabinet, ' ', second_week.[Subject], ' - ', second_week.[Groups])
         WHEN first_week.[Groups] is not null and second_week.[Groups] is null THEN CONCAT(first_week.Cabinet, ' ', first_week.[Subject], ' - ', first_week.[Groups], ' /')
         WHEN first_week.[Groups] is not null and second_week.[Groups] is not null THEN CONCAT(first_week.Cabinet, ' ', first_week.[Subject], ' - ', first_week.[Groups], ' / ', second_week.Cabinet, ' ', second_week.[Subject], ' - ', second_week.[Groups])
-      END as [Groups]
+      END as [Groups],
+      CASE 
+          WHEN first_week.[Groups] is null and second_week.[Groups] is not null THEN null
+          ELSE first_week.Cabinet
+        END as [Cab_fw],
+      CASE 
+          WHEN first_week.[Groups] is not null and second_week.[Groups] is null THEN null
+          ELSE second_week.Cabinet
+        END as [Cab_sw],
+      CASE 
+          WHEN first_week.[Groups] is null and second_week.[Groups] is not null THEN null
+          ELSE first_week.[Subject]
+        END as [Subject_fw],
+      CASE 
+          WHEN first_week.[Groups] is not null and second_week.[Groups] is null THEN null
+          ELSE second_week.[Subject]
+        END as [Subject_fw],
+      CASE 
+          WHEN first_week.[Groups] is null and second_week.[Groups] is not null THEN null
+          ELSE first_week.[Groups]
+        END as [Groups_short_fw],
+      CASE 
+          WHEN first_week.[Groups] is not null and second_week.[Groups] is null THEN null
+          ELSE second_week.[Groups]
+        END as [Groups_short_sw]
     FROM (
     SELECT days.*, lect_pairs.[Lesson], lect_pairs.[Lecturer], lect_pairs.[Subject], lect_pairs.[Cabinet], lect_pairs.[Subject_Type], lect_pairs.[Groups]
     FROM [UniASR].[dbo].[Days] as days
@@ -132,7 +156,31 @@ router.route('/groups/:group').get((req, res, next) => {
 			THEN CONCAT(first_week.[Cabinet], ' ', first_week.[Subject], ' ', first_week.[Lecturer], ' /')
 		WHEN first_week.[Lecturer] is not null and second_week.[Lecturer] is not null and first_week.[Subject] is not null and second_week.[Subject] is not null and first_week.[Cabinet] is not null and second_week.[Cabinet] is not null
 			THEN CONCAT(first_week.[Cabinet], ' ', first_week.[Subject], ' ', first_week.[Lecturer], ' / ', second_week.[Cabinet], ' ', second_week.[Subject], ' ', second_week.[Lecturer])
-	END as full_lesson
+	END as full_lesson,
+	CASE
+		WHEN first_week.[Cabinet] is null THEN null
+		ELSE first_week.[Cabinet]
+	END as cab_fw,
+	CASE
+		WHEN second_week.[Cabinet] is null THEN null
+		ELSE second_week.[Cabinet]
+	END as cab_sw,
+	CASE 
+		WHEN first_week.[Subject] is null THEN null
+		ELSE first_week.[Subject]
+	END as subject_fw,
+	CASE 
+		WHEN second_week.[Subject] is null THEN null
+		ELSE second_week.[Subject]
+	END as subject_sw,
+	CASE
+		WHEN first_week.[Lecturer] is null THEN null
+		ELSE first_week.[Lecturer]
+	END as lecturer_fw,
+	CASE
+		WHEN second_week.[Lecturer] is null THEN null
+		ELSE second_week.[Lecturer]
+	END as lecturer_sw
 		
 FROM
 (Select days.*,
