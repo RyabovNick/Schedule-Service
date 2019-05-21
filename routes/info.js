@@ -10,8 +10,6 @@ router.route('/groups/:group').get((req, res, next) => {
 
     const request = new sql.Request(pool);
     request.input('group', sql.NVarChar, req.params.group);
-    // в базе год +2000 лет хранится (4018, 4019 и т.д.)
-    request.input('year', sql.NVarChar, year + 2000);
     request.query(
       `
       SELECT [Код] as code
