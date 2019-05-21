@@ -44,7 +44,7 @@ router.route('/teachers/:fio').get((req, res, next) => {
       CASE 
           WHEN first_week.[Groups] is not null and second_week.[Groups] is null THEN null
           ELSE second_week.[Subject]
-        END as [Subject_fw],
+        END as [Subject_sw],
       CASE 
           WHEN first_week.[Groups] is null and second_week.[Groups] is not null THEN null
           ELSE first_week.[Groups]
