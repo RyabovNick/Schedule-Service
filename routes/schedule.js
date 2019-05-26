@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const sql = require('mssql');
 const pool = require('../config/config');
+const { logger } = require('../lib/logger');
 
 router.route('/teachers/:fio').get((req, res, next) => {
   pool.connect(err => {
@@ -105,7 +106,14 @@ router.route('/teachers/:fio').get((req, res, next) => {
     
     `,
       (err, result) => {
-        if (err) res.sendStatus(400);
+        if (err) {
+          logger.log('error', 'Get teachers schedule error', { err });
+          res.sendStatus(400);
+        }
+
+        logger.log('info', 'Get teachers schedule success', {
+          result: req.params.fio,
+        });
 
         let getSchedule = result.recordset;
 
@@ -235,7 +243,14 @@ order by [Day], [Lesson_ID]
     
     `,
       (err, result) => {
-        if (err) res.sendStatus(400);
+        if (err) {
+          logger.log('error', 'Get group schedule error', { err });
+          res.sendStatus(400);
+        }
+
+        logger.log('info', 'Get group schedule success', {
+          result: req.params.group,
+        });
 
         let getSchedule = result.recordset;
 
@@ -277,7 +292,10 @@ router.route('/teachers').get((req, res, next) => {
         order by [Lecturer]
     `,
       (err, result) => {
-        if (err) res.sendStatus(400);
+        if (err) {
+          logger.log('error', 'Get teachers error', { err });
+          res.sendStatus(400);
+        }
 
         pool.close();
         res.send(result.recordset);
@@ -306,7 +324,10 @@ router.route('/groups').get((req, res, next) => {
 	order by [Caf], [Group]
     `,
       (err, result) => {
-        if (err) res.sendStatus(400);
+        if (err) {
+          logger.log('error', 'Get groups error', { err });
+          res.sendStatus(400);
+        }
 
         let getGroups = result.recordset;
 

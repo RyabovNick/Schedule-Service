@@ -37,5 +37,6 @@ router.use(
 
 router.use('/api', require('./schedule'));
 router.use('/api/info', require('./info'));
+router.use('/api/priem', require('./priem'));
 
 module.exports = router;

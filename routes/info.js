@@ -1,12 +1,11 @@
 const router = require('express').Router();
 const sql = require('mssql');
 const pool = require('../config/config_universityPROF');
+const { logger } = require('../lib/logger');
 
 router.route('/groups/:group').get((req, res, next) => {
   pool.connect(err => {
     if (err) res.sendStatus(400);
-
-    // ищем какой сейчас учебный год (2018-2019 - нам надо 1-ое)
 
     const request = new sql.Request(pool);
     request.input('group', sql.NVarChar, req.params.group);
@@ -36,7 +35,14 @@ router.route('/groups/:group').get((req, res, next) => {
       order by fio
     `,
       (err, result) => {
-        if (err) res.sendStatus(400);
+        if (err) {
+          logger.log('error', 'Get group info error', { err });
+          res.sendStatus(400);
+        }
+
+        logger.log('info', 'Get group info success', {
+          result: req.params.group,
+        });
 
         pool.close();
         res.send(result.recordset);
@@ -65,7 +71,14 @@ router.route('/teacher/:fio').get((req, res, next) => {
       order by exp desc
     `,
       (err, result) => {
-        if (err) res.sendStatus(400);
+        if (err) {
+          logger.log('error', 'Get teacher info error', { err });
+          res.sendStatus(400);
+        }
+
+        logger.log('info', 'Get teacher info success', {
+          result: req.params.fio,
+        });
 
         pool.close();
         res.send(result.recordset);
