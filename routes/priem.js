@@ -83,27 +83,27 @@ router.route('/specialities/people/:code').get((req, res, next) => {
         ,sum([ege]) as [ege]
         ,[indiv] + sum([ege]) as [sum]
         FROM
-          (SELECT [Наименование] as [fio]
-                ,[КонкурснаяГруппа] as [konkursGroup]
-                ,[ОснованиеПоступления] as [osnovaniePost]
-                ,[Специальность] as [spec]
-                ,[КодСпециальности] as [code]
-                ,[КоличествоМест] as [mest]
-              ,CASE WHEN [БаллИндивидуальноеДостижение] is null THEN 0 ELSE [БаллИндивидуальноеДостижение] END as [indiv]
-              ,[Предмет] as [pred]
-              ,max(cast([БаллЕГЭ] as INT)) as [ege]
-            FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_2018]
-            where [УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and [СостояниеАбитуриента] = 'Зачислен' and [ЕГЭДействительно] = 'Да' and [КодСпециальности] = @code
-            and [Предмет] in (Select distinct [Предмет] from [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_2018] where [КодСпециальности] = @code)
-            GROUP BY [Наименование],
-                [КонкурснаяГруппа],
-                [ОснованиеПоступления],
-                [Специальность],
-                [КодСпециальности],
-                [КоличествоМест],
-                [БаллИндивидуальноеДостижение],
-                [Предмет]
-                ) as sumDiffEge
+      (SELECT docs.[Наименование] as [fio]
+            ,docs.[КонкурснаяГруппа] as [konkursGroup]
+            ,docs.[ОснованиеПоступления] as [osnovaniePost]
+            ,docs.[Специальность] as [spec]
+            ,docs.[КодСпециальности] as [code]
+            ,docs.[КоличествоМест] as [mest]
+          ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]
+          ,docs.[Предмет] as [pred]
+          ,max(cast(docs.[БаллЕГЭ] as INT)) as [ege]
+        FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_2018] as docs
+        INNER JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_2018] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
+        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] = 'Зачислен' and docs.[ЕГЭДействительно] = 'Да' and docs.[КодСпециальности] = @code
+        GROUP BY docs.[Наименование],
+            docs.[КонкурснаяГруппа],
+            docs.[ОснованиеПоступления],
+            docs.[Специальность],
+            docs.[КодСпециальности],
+            docs.[КоличествоМест],
+            docs.[БаллИндивидуальноеДостижение],
+            docs.[Предмет]
+            ) as sumDiffEge
         GROUP BY [fio],
             [konkursGroup],
             [osnovaniePost],
