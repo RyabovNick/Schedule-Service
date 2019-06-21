@@ -14,7 +14,7 @@ router.route('/specialities').get((req, res, next) => {
       `
       SELECT distinct [Специальность] as spec
       ,[КодСпециальности] as code
-      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_201]
+      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_2018]
       where [УровеньПодготовки] != 'Магистр'
       order by [Специальность]
     `,
