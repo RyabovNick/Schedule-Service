@@ -5,7 +5,16 @@ const {
   loggerPriem
 } = require('../lib/logger');
 
-router.route('/specialities').get((req, res, next) => {
+router.route('/previousSpecialities').get((req, res, next) => {
+  if (getYearForCurrentRequests() === null) return;
+  specialities(req, res, next, 22222);
+});
+
+router.route('/currentSpecialities').get((req, res, next) => {
+
+});
+
+function specialities(req, res, next, year) {
   pool.connect(err => {
     if (err) res.sendStatus(400);
 
@@ -31,9 +40,14 @@ router.route('/specialities').get((req, res, next) => {
       },
     );
   });
-});
+}
+
 
 router.route('/specialities/info/:code').get((req, res, next) => {
+  universalFunc(req, res, next, 2018);
+});
+
+function universalFunc(req, res, next, year) {
   pool.connect(err => {
     if (err) res.sendStatus(400);
 
@@ -48,7 +62,7 @@ router.route('/specialities/info/:code').get((req, res, next) => {
         ,[Специальность] as [spec]
         ,[КодСпециальности] as [code]
         ,[КоличествоМест] as [places]
-      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_2018]
+      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_${year}]
       where [КодСпециальности] = @code and [КоличествоМест] != 0
       order by [КоличествоМест] desc
     `,
@@ -69,7 +83,7 @@ router.route('/specialities/info/:code').get((req, res, next) => {
       },
     );
   });
-});
+}
 
 router.route('/specialities/people/:code').get((req, res, next) => {
   pool.connect(err => {
@@ -206,3 +220,32 @@ router.route('/specialities/applicants/:code').get((req, res, next) => {
 });
 
 module.exports = router;
+
+
+
+
+
+function getCurrentDate() {
+  let currentTime = new Date();
+  return {
+    month: currentTime.getMonth() + 1,
+    day: currentTime.getDate(),
+    year: currentTime.getFullYear()
+  };
+}
+
+//rewrite!
+function getYearForCurrentRequests() {
+  let currentDate = getCurrentDate();
+  if (currentDate.month < 6 || currentDate.month > 11) return null;
+  if (currentDate.month == 6 && currentDate.day < 20) return null;
+  if (currentDate.month == 11 && currentDate.day > 1) return null;
+  return currentDate.year;
+}
+
+function getYearForPassingScore() {
+  let currentDate = getCurrentDate();
+  if (currentDate.month >= 11 && currentDate.day > 1)
+    return currentDate.year;
+  return currentDate.year - 1;
+}
