@@ -14,7 +14,7 @@ router.route('/specialities').get((req, res, next) => {
       `
       SELECT distinct [Специальность] as spec
       ,[КодСпециальности] as code
-      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_2018]
+      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_201]
       where [УровеньПодготовки] != 'Магистр'
       order by [Специальность]
     `,
@@ -165,8 +165,8 @@ router.route('/specialities/applicants/:code').get((req, res, next) => {
           ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]
           ,docs.[Предмет] as [pred]
           ,max(cast(docs.[БаллЕГЭ] as INT)) as [ege]
-        FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_2018] as docs
-        INNER JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_2018] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
+        FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_2019] as docs
+        INNER JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_2019] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
         where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] = 'Зачислен' and docs.[ЕГЭДействительно] = 'Да' and docs.[КодСпециальности] = @code
         GROUP BY docs.[Наименование],
             docs.[КонкурснаяГруппа],
