@@ -213,14 +213,10 @@ router.route('/specialities/people/:code').get((req, res, next) => {
   });
 });
 
-<<<<<<< HEAD
-router.route('/specialities/applicants/:code').get((req, res, next) => {
-=======
 
 
 //Переделать!!!
 router.route('/newSpecialities/people/:code').get((req, res, next) => {
->>>>>>> 35acbde6af8552209f8b83df3b44d0d46b021ce6
   pool.connect(err => {
     if (err) res.sendStatus(400);
 
@@ -270,13 +266,7 @@ router.route('/newSpecialities/people/:code').get((req, res, next) => {
     `,
       (err, result) => {
         if (err) {
-<<<<<<< HEAD
-          loggerPriem.log('error', 'Get speciality people error', {
-            err
-          });
-=======
           loggerPriem.log('error', 'Get speciality people error', { err });
->>>>>>> 35acbde6af8552209f8b83df3b44d0d46b021ce6
           res.sendStatus(400);
         }
 
@@ -291,8 +281,4 @@ router.route('/newSpecialities/people/:code').get((req, res, next) => {
   });
 });
 
-<<<<<<< HEAD
 module.exports = router;
-=======
-module.exports = router;
->>>>>>> 35acbde6af8552209f8b83df3b44d0d46b021ce6
