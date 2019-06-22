@@ -33,6 +33,39 @@ router.route('/specialities').get((req, res, next) => {
   });
 });
 
+//Переделать!!!!!
+router.route('/newSpecialities').get((req, res, next) => {
+  pool.connect(err => {
+    if (err) res.sendStatus(400);
+
+    const request = new sql.Request(pool);
+    request.query(
+      `
+      SELECT distinct [Специальность] as spec
+      ,[КодСпециальности] as code
+      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_2019]
+      where [УровеньПодготовки] != 'Магистр'
+      order by [Специальность]
+    `,
+      (err, result) => {
+        if (err) {
+          loggerPriem.log('error', 'Get specialities error', { err });
+          res.sendStatus(400);
+        }
+
+        pool.close();
+        res.send(result.recordset);
+      },
+    );
+  });
+});
+
+
+
+
+
+
+
 router.route('/specialities/info/:code').get((req, res, next) => {
   pool.connect(err => {
     if (err) res.sendStatus(400);
@@ -70,6 +103,48 @@ router.route('/specialities/info/:code').get((req, res, next) => {
     );
   });
 });
+
+
+
+//Переделать!!!!
+router.route('/newSpecialities/info/:code').get((req, res, next) => {
+  pool.connect(err => {
+    if (err) res.sendStatus(400);
+
+    const request = new sql.Request(pool);
+    request.input('code', sql.NVarChar, req.params.code);
+    request.query(
+      `
+      SELECT [КонкурснаяГруппа] as [group]
+        ,[ФормаОбучения] as [form]
+        ,[УровеньПодготовки] as [level]
+        ,[ОснованиеПоступления] as [osnov]
+        ,[Специальность] as [spec]
+        ,[КодСпециальности] as [code]
+        ,[КоличествоМест] as [places]
+      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_2019]
+      where [КодСпециальности] = @code and [КоличествоМест] != 0
+      order by [КоличествоМест] desc
+    `,
+      (err, result) => {
+        if (err) {
+          loggerPriem.log('error', 'Get speciality info error', { err });
+          res.sendStatus(400);
+        }
+
+        loggerPriem.log('info', 'Get speciality info success', {
+          result: req.params.code,
+        });
+
+        pool.close();
+        res.send(result.recordset);
+      },
+    );
+  });
+});
+
+
+
 
 router.route('/specialities/people/:code').get((req, res, next) => {
   pool.connect(err => {
@@ -138,7 +213,14 @@ router.route('/specialities/people/:code').get((req, res, next) => {
   });
 });
 
+<<<<<<< HEAD
 router.route('/specialities/applicants/:code').get((req, res, next) => {
+=======
+
+
+//Переделать!!!
+router.route('/newSpecialities/people/:code').get((req, res, next) => {
+>>>>>>> 35acbde6af8552209f8b83df3b44d0d46b021ce6
   pool.connect(err => {
     if (err) res.sendStatus(400);
 
@@ -188,9 +270,13 @@ router.route('/specialities/applicants/:code').get((req, res, next) => {
     `,
       (err, result) => {
         if (err) {
+<<<<<<< HEAD
           loggerPriem.log('error', 'Get speciality people error', {
             err
           });
+=======
+          loggerPriem.log('error', 'Get speciality people error', { err });
+>>>>>>> 35acbde6af8552209f8b83df3b44d0d46b021ce6
           res.sendStatus(400);
         }
 
@@ -205,4 +291,8 @@ router.route('/specialities/applicants/:code').get((req, res, next) => {
   });
 });
 
+<<<<<<< HEAD
 module.exports = router;
+=======
+module.exports = router;
+>>>>>>> 35acbde6af8552209f8b83df3b44d0d46b021ce6
