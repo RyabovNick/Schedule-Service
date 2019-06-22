@@ -34,6 +34,7 @@ router.route('/specialities').get((req, res, next) => {
 });
 
 //Переделать!!!!!
+//ДЛЯ коммита
 router.route('/newSpecialities').get((req, res, next) => {
   pool.connect(err => {
     if (err) res.sendStatus(400);
