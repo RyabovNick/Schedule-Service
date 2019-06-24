@@ -1,7 +1,9 @@
 const router = require("express").Router();
 const sql = require("mssql");
 const pool = require("../config/config_universityPROF");
-const { loggerPriem } = require("../lib/logger");
+const {
+  loggerPriem
+} = require("../lib/logger");
 
 const getSpecialities = (res, year) => {
   pool.connect(err => {
@@ -174,6 +176,7 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
         ,[indiv]
         ,sum([ege]) as [ege]
         ,[indiv] + sum([ege]) as [sum]
+        ,[credited]
         FROM
       (SELECT docs.[Наименование] as [fio]
             ,docs.[КонкурснаяГруппа] as [konkursGroup]
@@ -181,12 +184,13 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
             ,docs.[Специальность] as [spec]
             ,docs.[КодСпециальности] as [code]
             ,docs.[КоличествоМест] as [mest]
+            ,CASE WHEN docs.[СостояниеАбитуриента] = 'Зачислен' THEN 'true' ELSE 'false' END as [credited]
           ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]
           ,docs.[Предмет] as [pred]
           ,max(cast(docs.[БаллЕГЭ] as INT)) as [ege]
         FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
         INNER JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
-        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[ЕГЭДействительно] = 'Да' and docs.[КодСпециальности] = @code
+        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да' and docs.[КодСпециальности] = @code
         GROUP BY docs.[Наименование],
             docs.[КонкурснаяГруппа],
             docs.[ОснованиеПоступления],
@@ -194,7 +198,8 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
             docs.[КодСпециальности],
             docs.[КоличествоМест],
             docs.[БаллИндивидуальноеДостижение],
-            docs.[Предмет]
+            docs.[Предмет],
+            docs.[СостояниеАбитуриента]
             ) as sumDiffEge
         GROUP BY [fio],
             [konkursGroup],
@@ -202,12 +207,15 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
             [spec],
             [code],
             [mest],
-            [indiv]
+            [indiv],
+            [credited]
         ORDER BY [sum] desc
     `,
       (err, result) => {
         if (err) {
-          loggerPriem.log("error", "Get speciality people error", { err });
+          loggerPriem.log("error", "Get speciality people error", {
+            err
+          });
           res.sendStatus(400);
         }
 
