@@ -250,7 +250,7 @@ function admissionCommitteeInProcess() {
   return true;
 }
 
-//возвращать предыдущий год до тех пор, пока не закончится приемка (1 ноября)
+//возврящает предыдущий год до тех пор, пока не закончится приемка (1 ноября)
 function getYearForCurrentSpecialities() {
   let currentDate = getCurrentDate();
   if (currentDate.month < 11) return currentDate.year - 1;
