@@ -283,3 +283,31 @@ router.route('/newSpecialities/people/:code').get((req, res, next) => {
 });
 
 module.exports = router;
+
+
+
+
+function getCurrentDate() {
+  let currentTime = new Date();
+  return {
+    month: currentTime.getMonth() + 1,
+    day: currentTime.getDate(),
+    year: currentTime.getFullYear()
+  };
+}
+
+//rewrite!
+function getYearForCurrentRequests() {
+  let currentDate = getCurrentDate();
+  if (currentDate.month < 6 || currentDate.month > 11) return null;
+  if (currentDate.month == 6 && currentDate.day < 20) return null;
+  if (currentDate.month == 11 && currentDate.day > 1) return null;
+  return currentDate.year;
+}
+
+function getYearForPassingScore() {
+  let currentDate = getCurrentDate();
+  if (currentDate.month >= 11 && currentDate.day > 1)
+    return currentDate.year;
+  return currentDate.year - 1;
+}
