@@ -269,9 +269,65 @@ router.route("/applicants").get((req, res, next) => {
     const request = new sql.Request(pool);
     request.query(
       `
-      Select distinct [applicant]
+      Select distinct [fio],
+        [id]
         FROM
-      (SELECT docs.[Наименование] as [applicant]
+      (SELECT docs.[Наименование] as [fio]
+            ,docs.[Код] as [id]
+            ,docs.[КонкурснаяГруппа] as [konkursGroup]
+            ,CASE WHEN docs.[СостояниеАбитуриента] = 'Зачислен' THEN 'true' ELSE 'false' END as [credited]
+          ,docs.[Предмет] as [pred]
+          ,max(CASE WHEN docs.[БаллЕГЭ] IS NULL THEN 0 ELSE docs.[БаллЕГЭ] END) as [ege]
+        FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
+        LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
+        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да'
+        GROUP BY docs.[Код],
+            docs.[Наименование],
+            docs.[КонкурснаяГруппа],
+            docs.[Предмет],
+            docs.[СостояниеАбитуриента]
+            ) as sumDiffEge
+        ORDER BY [fio]
+    `,
+      (err, result) => {
+        if (err) {
+          loggerPriem.log("error", "Get specialities error", {
+            err
+          });
+          res.sendStatus(400);
+        }
+
+        pool.close();
+        res.send(result.recordset);
+      }
+    );
+  });
+});
+
+router.route("/applicants/info/:id").get((req, res, next) => {
+  if (!admissionCommitteeInProcess())
+    res.send("AdmissionCommitteeHasNotStarted");
+  let year = getCurrentDate().year;
+  pool.connect(err => {
+    if (err) res.sendStatus(400);
+
+    const request = new sql.Request(pool);
+
+    request.input("id", sql.NVarChar, req.params.id);
+    request.query(
+      `
+      Select [fio]
+        ,[konkursGroup]
+        ,[osnovaniePost]
+        ,[spec]
+        ,[code]
+        ,[mest]
+        ,[indiv]
+        ,sum([ege]) as [ege]
+        ,[indiv] + sum([ege]) as [sum]
+        ,[credited]
+        FROM
+      (SELECT docs.[Наименование] as [fio]
             ,docs.[КонкурснаяГруппа] as [konkursGroup]
             ,docs.[ОснованиеПоступления] as [osnovaniePost]
             ,docs.[Специальность] as [spec]
@@ -283,7 +339,7 @@ router.route("/applicants").get((req, res, next) => {
           ,max(CASE WHEN docs.[БаллЕГЭ] IS NULL THEN 0 ELSE docs.[БаллЕГЭ] END) as [ege]
         FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
         LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
-        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да'
+        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да' and docs.[Код] = @id
         GROUP BY docs.[Наименование],
             docs.[КонкурснаяГруппа],
             docs.[ОснованиеПоступления],
@@ -294,7 +350,15 @@ router.route("/applicants").get((req, res, next) => {
             docs.[Предмет],
             docs.[СостояниеАбитуриента]
             ) as sumDiffEge
-        ORDER BY [applicant]
+        GROUP BY [fio],
+            [konkursGroup],
+            [osnovaniePost],
+            [spec],
+            [code],
+            [mest],
+            [indiv],
+            [credited]
+        ORDER BY [sum] desc
     `,
       (err, result) => {
         if (err) {
