@@ -168,6 +168,7 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
     request.query(
       `
       Select [fio]
+        ,[id]
         ,[konkursGroup]
         ,[osnovaniePost]
         ,[spec]
@@ -179,6 +180,7 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
         ,[credited]
         FROM
       (SELECT docs.[Наименование] as [fio]
+            ,docs.[Код] as [id]
             ,docs.[КонкурснаяГруппа] as [konkursGroup]
             ,docs.[ОснованиеПоступления] as [osnovaniePost]
             ,docs.[Специальность] as [spec]
@@ -191,7 +193,8 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
         FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
         LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
         where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да' and docs.[КодСпециальности] = @code
-        GROUP BY docs.[Наименование],
+        GROUP BY docs.[Код],
+            docs.[Наименование],
             docs.[КонкурснаяГруппа],
             docs.[ОснованиеПоступления],
             docs.[Специальность],
@@ -201,7 +204,8 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
             docs.[Предмет],
             docs.[СостояниеАбитуриента]
             ) as sumDiffEge
-        GROUP BY [fio],
+        GROUP BY [id],
+            [fio],
             [konkursGroup],
             [osnovaniePost],
             [spec],
