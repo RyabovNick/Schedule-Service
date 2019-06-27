@@ -155,7 +155,7 @@ router.route("/newSpecialities").get((req, res, next) => {
       SELECT distinct pln.[Специальность] as spec
                   ,pln.[КодСпециальности] as [code]
                   ,CASE WHEN codes.[numberOfApplications] is null THEN 0 ELSE codes.[numberOfApplications] END as [numberOfApplications]
-                FROM [UniversityPROF].[dbo].[прием_ПланыНабора_2019] as pln
+                FROM [UniversityPROF].[dbo].[прием_ПланыНабора_${year}] as pln
                   Left join 
                   (Select [code],
                     count([code]) as [numberOfApplications]
@@ -166,8 +166,8 @@ router.route("/newSpecialities").get((req, res, next) => {
                         ,docs.[КонкурснаяГруппа] as [konkursGroup]
                         ,docs.[КодСпециальности] as [code]
                         ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]          
-                      FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_2019] as docs
-                      LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_2019] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
+                      FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
+                      LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
                       where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да'
                       GROUP BY docs.[Код],
                         docs.[КонкурснаяГруппа],
