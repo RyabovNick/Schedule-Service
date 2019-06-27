@@ -153,35 +153,35 @@ router.route("/newSpecialities").get((req, res, next) => {
     request.query(
       `
       SELECT distinct pln.[Специальность] as spec
-                  ,pln.[КодСпециальности] as [code]
-                  ,CASE WHEN codes.[numberOfApplications] is null THEN 0 ELSE codes.[numberOfApplications] END as [numberOfApplications]
-                FROM [UniversityPROF].[dbo].[прием_ПланыНабора_${year}] as pln
-                  Left join 
-                  (Select [code],
-                    count([code]) as [numberOfApplications]
-                  from
-                  (Select [code]
-                      FROM
-                      (SELECT docs.[Код] as [id]
-                        ,docs.[КонкурснаяГруппа] as [konkursGroup]
-                        ,docs.[КодСпециальности] as [code]
-                        ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]          
-                      FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
-                      LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
-                      where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да'
-                      GROUP BY docs.[Код],
-                        docs.[КонкурснаяГруппа],
-                        docs.[КодСпециальности],
-                        docs.[БаллИндивидуальноеДостижение]
-                        ) as sumDiffEge
-                    GROUP BY [id],
-                      [konkursGroup],
-                      [code],
-                      [indiv]) as tmp
-                  GROUP BY [code]) as codes
-              on codes.[code] = pln.[КодСпециальности]
-              where pln.[УровеньПодготовки] != 'Магистр'
-              order by pln.[Специальность]
+              ,pln.[КодСпециальности] as [code]
+              ,CASE WHEN codes.[numberOfApplications] is null THEN 0 ELSE codes.[numberOfApplications] END as [numberOfApplications]
+            FROM [UniversityPROF].[dbo].[прием_ПланыНабора_${year}] as pln
+              Left join 
+              (Select [code],
+                count([code]) as [numberOfApplications]
+              from
+              (Select [code]
+                  FROM
+                  (SELECT docs.[Код] as [id]
+                    ,docs.[КонкурснаяГруппа] as [konkursGroup]
+                    ,docs.[КодСпециальности] as [code]
+                    ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]          
+                  FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
+                  LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
+                  where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да'
+                  GROUP BY docs.[Код],
+                    docs.[КонкурснаяГруппа],
+                    docs.[КодСпециальности],
+                    docs.[БаллИндивидуальноеДостижение]
+                    ) as sumDiffEge
+                GROUP BY [id],
+                  [konkursGroup],
+                  [code],
+                  [indiv]) as tmp
+              GROUP BY [code]) as codes
+          on codes.[code] = pln.[КодСпециальности]
+          where pln.[УровеньПодготовки] != 'Магистр'
+          order by pln.[Специальность]
     `,
       (err, result) => {
         if (err) {
