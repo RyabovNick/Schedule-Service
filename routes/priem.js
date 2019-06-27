@@ -1,37 +1,7 @@
 const router = require("express").Router();
 const sql = require("mssql");
 const pool = require("../config/config_universityPROF");
-const {
-  loggerPriem
-} = require("../lib/logger");
-
-const getSpecialities = (res, year) => {
-  pool.connect(err => {
-    if (err) res.sendStatus(400);
-
-    const request = new sql.Request(pool);
-    request.query(
-      `
-      SELECT distinct [Специальность] as spec
-      ,[КодСпециальности] as code
-      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_${year}]
-      where [УровеньПодготовки] != 'Магистр'
-      order by [Специальность]
-    `,
-      (err, result) => {
-        if (err) {
-          loggerPriem.log("error", "Get specialities error", {
-            err
-          });
-          res.sendStatus(400);
-        }
-
-        pool.close();
-        res.send(result.recordset);
-      }
-    );
-  });
-};
+const { loggerPriem } = require("../lib/logger");
 
 const getSpecialityInfo = (req, res, year) => {
   pool.connect(err => {
@@ -72,7 +42,32 @@ const getSpecialityInfo = (req, res, year) => {
 };
 
 router.route("/specialities").get((req, res, next) => {
-  return getSpecialities(res, getYearForCurrentSpecialities());
+  let year = getYearForCurrentSpecialities();
+  pool.connect(err => {
+    if (err) res.sendStatus(400);
+
+    const request = new sql.Request(pool);
+    request.query(
+      `
+      SELECT distinct [Специальность] as spec
+      ,[КодСпециальности] as code
+      FROM [UniversityPROF].[dbo].[прием_ПланыНабора_${year}]
+      where [УровеньПодготовки] != 'Магистр'
+      order by [Специальность]
+    `,
+      (err, result) => {
+        if (err) {
+          loggerPriem.log("error", "Get specialities error", {
+            err
+          });
+          res.sendStatus(400);
+        }
+
+        pool.close();
+        res.send(result.recordset);
+      }
+    );
+  });
 });
 router.route("/specialities/info/:code").get((req, res, next) => {
   return getSpecialityInfo(req, res, getYearForCurrentSpecialities());
@@ -149,7 +144,56 @@ router.route("/specialities/people/:code").get((req, res, next) => {
 router.route("/newSpecialities").get((req, res, next) => {
   if (!admissionCommitteeInProcess())
     return res.send("AdmissionCommitteeHasNotStarted");
-  return getSpecialities(res, getCurrentDate().year);
+  let year = getCurrentDate().year;
+
+  pool.connect(err => {
+    if (err) res.sendStatus(400);
+
+    const request = new sql.Request(pool);
+    request.query(
+      `
+      Select [code],
+              [spec],
+              count([code]) as numberOfApplications
+            from
+             (Select [spec]
+                    ,[code]
+                    FROM
+                  (SELECT docs.[Код] as [id]
+                        ,docs.[КонкурснаяГруппа] as [konkursGroup]
+                        ,docs.[Специальность] as [spec]
+                        ,docs.[КодСпециальности] as [code]
+                      ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]          
+                    FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
+                    LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
+                    where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да'
+                    GROUP BY docs.[Код],
+                        docs.[КонкурснаяГруппа],
+                        docs.[Специальность],
+                        docs.[КодСпециальности],
+                        docs.[БаллИндивидуальноеДостижение]
+                        ) as sumDiffEge
+                GROUP BY [id],
+                    [konkursGroup],
+                    [spec],
+                    [code],
+                    [indiv]) as tmp
+            GROUP BY [code],
+              [spec]
+    `,
+      (err, result) => {
+        if (err) {
+          loggerPriem.log("error", "Get specialities error", {
+            err
+          });
+          res.sendStatus(400);
+        }
+
+        pool.close();
+        res.send(result.recordset);
+      }
+    );
+  });
 });
 router.route("/newSpecialities/info/:code").get((req, res, next) => {
   if (!admissionCommitteeInProcess())
