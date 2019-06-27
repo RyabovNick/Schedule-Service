@@ -84,20 +84,14 @@ router.route("/specialities/people/:code").get((req, res, next) => {
       `
       Select [fio]
         ,[konkursGroup]
-        ,[osnovaniePost]
-        ,[spec]
         ,[code]
-        ,[mest]
         ,[indiv]
         ,sum([ege]) as [ege]
         ,[indiv] + sum([ege]) as [sum]
         FROM
       (SELECT docs.[Наименование] as [fio]
             ,docs.[КонкурснаяГруппа] as [konkursGroup]
-            ,docs.[ОснованиеПоступления] as [osnovaniePost]
-            ,docs.[Специальность] as [spec]
             ,docs.[КодСпециальности] as [code]
-            ,docs.[КоличествоМест] as [mest]
           ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]
           ,docs.[Предмет] as [pred]
           ,max(cast(docs.[БаллЕГЭ] as INT)) as [ege]
@@ -106,19 +100,13 @@ router.route("/specialities/people/:code").get((req, res, next) => {
         where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] = 'Зачислен' and docs.[ЕГЭДействительно] = 'Да' and docs.[КодСпециальности] = @code
         GROUP BY docs.[Наименование],
             docs.[КонкурснаяГруппа],
-            docs.[ОснованиеПоступления],
-            docs.[Специальность],
             docs.[КодСпециальности],
-            docs.[КоличествоМест],
             docs.[БаллИндивидуальноеДостижение],
             docs.[Предмет]
             ) as sumDiffEge
         GROUP BY [fio],
             [konkursGroup],
-            [osnovaniePost],
-            [spec],
             [code],
-            [mest],
             [indiv]
         ORDER BY [sum] desc
     `,
@@ -168,7 +156,7 @@ router.route("/newSpecialities").get((req, res, next) => {
                     ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]          
                   FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
                   LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
-                  where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да'
+                  where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен')
                   GROUP BY docs.[Код],
                     docs.[КонкурснаяГруппа],
                     docs.[КодСпециальности],
@@ -216,10 +204,7 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
       Select [fio]
         ,[id]
         ,[konkursGroup]
-        ,[osnovaniePost]
-        ,[spec]
         ,[code]
-        ,[mest]
         ,[indiv]
         ,sum([ege]) as [ege]
         ,[indiv] + sum([ege]) as [sum]
@@ -228,24 +213,18 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
       (SELECT docs.[Наименование] as [fio]
             ,docs.[Код] as [id]
             ,docs.[КонкурснаяГруппа] as [konkursGroup]
-            ,docs.[ОснованиеПоступления] as [osnovaniePost]
-            ,docs.[Специальность] as [spec]
             ,docs.[КодСпециальности] as [code]
-            ,docs.[КоличествоМест] as [mest]
             ,CASE WHEN docs.[СостояниеАбитуриента] = 'Зачислен' THEN 'true' ELSE 'false' END as [credited]
           ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]
           ,docs.[Предмет] as [pred]
           ,max(CASE WHEN docs.[БаллЕГЭ] IS NULL THEN 0 ELSE docs.[БаллЕГЭ] END) as [ege]
         FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
         LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
-        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да' and docs.[КодСпециальности] = @code
+        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[КодСпециальности] = @code
         GROUP BY docs.[Код],
             docs.[Наименование],
             docs.[КонкурснаяГруппа],
-            docs.[ОснованиеПоступления],
-            docs.[Специальность],
             docs.[КодСпециальности],
-            docs.[КоличествоМест],
             docs.[БаллИндивидуальноеДостижение],
             docs.[Предмет],
             docs.[СостояниеАбитуриента]
@@ -253,10 +232,7 @@ router.route("/newSpecialities/people/:code").get((req, res, next) => {
         GROUP BY [id],
             [fio],
             [konkursGroup],
-            [osnovaniePost],
-            [spec],
             [code],
-            [mest],
             [indiv],
             [credited]
         ORDER BY [sum] desc
@@ -330,7 +306,7 @@ router.route("/applicants").get((req, res, next) => {
           ,max(CASE WHEN docs.[БаллЕГЭ] IS NULL THEN 0 ELSE docs.[БаллЕГЭ] END) as [ege]
         FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
         LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
-        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да'
+        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен')
         GROUP BY docs.[Код],
             docs.[Наименование],
             docs.[КонкурснаяГруппа],
@@ -368,10 +344,7 @@ router.route("/applicants/info/:id").get((req, res, next) => {
       `
       Select [fio]
         ,[konkursGroup]
-        ,[osnovaniePost]
-        ,[spec]
         ,[code]
-        ,[mest]
         ,[indiv]
         ,sum([ege]) as [ege]
         ,[indiv] + sum([ege]) as [sum]
@@ -379,33 +352,24 @@ router.route("/applicants/info/:id").get((req, res, next) => {
         FROM
       (SELECT docs.[Наименование] as [fio]
             ,docs.[КонкурснаяГруппа] as [konkursGroup]
-            ,docs.[ОснованиеПоступления] as [osnovaniePost]
-            ,docs.[Специальность] as [spec]
             ,docs.[КодСпециальности] as [code]
-            ,docs.[КоличествоМест] as [mest]
             ,CASE WHEN docs.[СостояниеАбитуриента] = 'Зачислен' THEN 'true' ELSE 'false' END as [credited]
           ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]
           ,docs.[Предмет] as [pred]
           ,max(CASE WHEN docs.[БаллЕГЭ] IS NULL THEN 0 ELSE docs.[БаллЕГЭ] END) as [ege]
         FROM [UniversityPROF].[dbo].[прием_ПоданныеДокументы_${year}] as docs
         LEFT JOIN [UniversityPROF].[dbo].[прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
-        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[ЕГЭДействительно] = 'Да' and docs.[Код] = @id
+        where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен') and docs.[Код] = @id
         GROUP BY docs.[Наименование],
             docs.[КонкурснаяГруппа],
-            docs.[ОснованиеПоступления],
-            docs.[Специальность],
             docs.[КодСпециальности],
-            docs.[КоличествоМест],
             docs.[БаллИндивидуальноеДостижение],
             docs.[Предмет],
             docs.[СостояниеАбитуриента]
             ) as sumDiffEge
         GROUP BY [fio],
             [konkursGroup],
-            [osnovaniePost],
-            [spec],
             [code],
-            [mest],
             [indiv],
             [credited]
         ORDER BY [sum] desc
