@@ -172,8 +172,7 @@ router.route("/newSpecialities").get((req, res, next) => {
                   [code],
                   [indiv],
                   [filedOriginal]) as tmp
-              GROUP BY [code],
-                  [filedOriginal]) as codes
+              GROUP BY [code]) as codes
           on codes.[code] = pln.[КодСпециальности]
           where pln.[УровеньПодготовки] != 'Магистр'
           order by pln.[Специальность]
