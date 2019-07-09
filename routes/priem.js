@@ -147,9 +147,10 @@ router.route("/newSpecialities").get((req, res, next) => {
     const request = new sql.Request(pool);
     request.query(
       `
-      SELECT [КонкурснаяГруппа] as spec, [Всего] as numberOfApplications, [Оригинал] as numberOfOriginals, [КодСпециальности] as code
+      SELECT [Специальность] as spec, SUM([Всего]) as numberOfApplications, SUM([Оригинал]) as numberOfOriginals, [КодСпециальности] as code
       FROM [UniversityPROF].[dbo].[Vestra_прием_ПланыНабора_2019]
-      order by [КонкурснаяГруппа]
+	    Group by [Специальность], [КодСпециальности]
+	    Order by spec
     `,
       (err, result) => {
         if (err) {
