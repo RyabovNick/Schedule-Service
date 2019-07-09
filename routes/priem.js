@@ -1,7 +1,9 @@
 const router = require("express").Router();
 const sql = require("mssql");
 const pool = require("../config/config_universityPROF");
-const { loggerPriem } = require("../lib/logger");
+const {
+  loggerPriem
+} = require("../lib/logger");
 
 const getSpecialityInfo = (req, res, year) => {
   pool.connect(err => {
@@ -51,6 +53,8 @@ router.route("/specialities").get((req, res, next) => {
       `
       SELECT distinct [Специальность] as spec
       ,[КодСпециальности] as code
+      ,[Всего] as allZaya
+      ,[Оригинал] as origZaya
       FROM [UniversityPROF].[dbo].[Vestra_прием_ПланыНабора_${year}]
       where [УровеньПодготовки] != 'Магистр'
       order by [Специальность]
@@ -130,6 +134,9 @@ router.route("/specialities/people/:code").get((req, res, next) => {
 });
 
 router.route("/newSpecialities").get((req, res, next) => {
+  //вставляешь селект сюда
+  // ладно попробую сяп)
+  //давай, удачи)
   if (!admissionCommitteeInProcess())
     return res.send("AdmissionCommitteeHasNotStarted");
   let year = getCurrentDate().year;
@@ -140,42 +147,9 @@ router.route("/newSpecialities").get((req, res, next) => {
     const request = new sql.Request(pool);
     request.query(
       `
-      SELECT distinct pln.[Специальность] as spec
-              ,pln.[КодСпециальности] as [code]
-              ,CASE WHEN codes.[numberOfApplications] is null THEN 0 ELSE codes.[numberOfApplications] END as [numberOfApplications]
-			        ,codes.[numberOfOriginals]
-            FROM [UniversityPROF].[dbo].[Vestra_прием_ПланыНабора_${year}] as pln
-              Left join 
-              (Select [code],
-                count([code]) as [numberOfApplications],
-				sum([filedOriginal]) as [numberOfOriginals]
-              from
-              (Select [code],
-                    [filedOriginal]
-                  FROM
-                  (SELECT docs.[Код] as [id]
-                    ,docs.[КонкурснаяГруппа] as [konkursGroup]
-                    ,docs.[КодСпециальности] as [code]
-                    ,CASE WHEN docs.[БаллИндивидуальноеДостижение] is null THEN 0 ELSE docs.[БаллИндивидуальноеДостижение] END as [indiv]
-                    ,CASE WHEN docs.[ВидДокумента] = 'Оригинал' THEN 1 ELSE 0 END as [filedOriginal]
-                  FROM [UniversityPROF].[dbo].[Vestra_прием_ПоданныеДокументы_${year}] as docs
-                  LEFT JOIN [UniversityPROF].[dbo].[Vestra_прием_ПредметыВКонкурснойГруппе_${year}] as pred on pred.[КонкурснаяГруппа] = docs.[КонкурснаяГруппа] and pred.[Предмет] = docs.[Предмет]
-                  where docs.[УровеньПодготовки] in ('Бакалавр','Специалист','Академический бакалавр','Прикладной бакалавр') and docs.[СостояниеАбитуриента] in ('Подано','Зачислен')
-                  GROUP BY docs.[Код],
-                    docs.[КонкурснаяГруппа],
-                    docs.[КодСпециальности],
-                    docs.[БаллИндивидуальноеДостижение],
-                    docs.[ВидДокумента]
-                    ) as sumDiffEge
-                GROUP BY [id],
-                  [konkursGroup],
-                  [code],
-                  [indiv],
-                  [filedOriginal]) as tmp
-              GROUP BY [code]) as codes
-          on codes.[code] = pln.[КодСпециальности]
-          where pln.[УровеньПодготовки] != 'Магистр'
-          order by pln.[Специальность]
+      SELECT [КонкурснаяГруппа] as spec, [Всего] as numberOfApplications, [Оригинал] as numberOfOriginals, [КодСпециальности] as code
+      FROM [UniversityPROF].[dbo].[Vestra_прием_ПланыНабора_2019]
+      order by [КонкурснаяГруппа]
     `,
       (err, result) => {
         if (err) {
