@@ -71,13 +71,13 @@ router.route('/teachers/:fio').get((req, res, next) => {
         ,[Cabinet]
         ,STUFF(( Select  ', ' + [_GROUP] as [text()] -- группы записать в строку
         FROM [UniASR].[dbo].[аср_Расписание] r_stuff
-        where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 30, [finish]))
+        where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 60, [finish]))
         and [Lecturer] like @fio
         and r.[Lesson_ID] = r_stuff.[Lesson_ID] and r.[Day_Number] = r_stuff.[Day_Number] and r.[Lecturer] = r_stuff.[Lecturer]
         and [Day_Number] between 1 and 7
         FOR XML PATH('')), 1, 1, '') AS [Groups]
       FROM [UniASR].[dbo].[аср_Расписание] r
-      where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 30, [finish]))
+      where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 60, [finish]))
       and [Lecturer] like @fio
       and [Day_Number] between 1 and 7
       group by [Lesson_ID], [Day_Number], [Lecturer], [_Subject], [Cabinet], [_Subject_Type]) as lect_pairs on days.[Day] = lect_pairs.[Day]
@@ -91,13 +91,13 @@ router.route('/teachers/:fio').get((req, res, next) => {
         ,[Cabinet]
         ,STUFF(( Select  ', ' + [_GROUP] as [text()] -- группы записать в строку
         FROM [UniASR].[dbo].[аср_Расписание] r_stuff
-        where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 30, [finish]))
+        where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 60, [finish]))
         and [Lecturer] like @fio
         and r.[Lesson_ID] = r_stuff.[Lesson_ID] and r.[Day_Number] = r_stuff.[Day_Number] and r.[Lecturer] = r_stuff.[Lecturer]
         and [Day_Number] between 8 and 14
         FOR XML PATH('')), 1, 1, '') AS [Groups]
       FROM [UniASR].[dbo].[аср_Расписание] r
-      where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 30, [finish]))
+      where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 60, [finish]))
       and [Lecturer] like @fio
       and [Day_Number] between 8 and 14
       group by [Lesson_ID], [Day_Number], [Lecturer], [_Subject], [Cabinet], [_Subject_Type]) as second_week
@@ -220,7 +220,7 @@ SELECT [Lesson_ID]
       ,[Cabinet]
       ,[Cabinet_Type]
   FROM [UniASR].[dbo].[аср_Расписание]
-  where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 30, [finish]))
+  where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 60, [finish]))
   and [_Group] = @group and [Day_Number] between 1 and 7
   ) as group_pairs ON days.[Day] = group_pairs.[Day]
 ) as first_week
@@ -236,7 +236,7 @@ SELECT [Lesson_ID]
       ,[Cabinet]
       ,[Cabinet_Type]
   FROM [UniASR].[dbo].[аср_Расписание]
-  where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 30, [finish]))
+  where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 60, [finish]))
   and [_Group] = @group and [Day_Number] between 8 and 14
 ) as second_week ON first_week.[Day] = second_week.[Day] AND first_week.[Lesson] = second_week.[Lesson]
 order by [Day], [Lesson_ID]
@@ -288,7 +288,7 @@ router.route('/teachers').get((req, res, next) => {
       [Lecturer_ID] as ID
       ,[Lecturer]
         FROM [UniASR].[dbo].[аср_Расписание]
-        where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 30, [finish]))
+        where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 60, [finish]))
         order by [Lecturer]
     `,
       (err, result) => {
@@ -319,7 +319,7 @@ router.route('/groups').get((req, res, next) => {
 			ELSE [Facutet]
 			END as [Caf], [_Group] as [Group]
 		From [UniASR].[dbo].[аср_Расписание]
-		where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 30, [finish]))
+		where GETDATE() between DATEADD(YEAR, -2000, DATEADD(DAY, -30, [start])) and DATEADD(YEAR, -2000, DATEADD(DAY, 60, [finish]))
 	  ) as r
 	order by [Caf], [Group]
     `,
