@@ -1,7 +1,9 @@
 const router = require('express').Router();
 const sql = require('mssql');
 const pool = require('../config/config_universityPROF');
-const { logger } = require('../lib/logger');
+const {
+  logger
+} = require('../lib/logger');
 
 router.route('/groups/:group').get((req, res, next) => {
   pool.connect(err => {
@@ -36,7 +38,9 @@ router.route('/groups/:group').get((req, res, next) => {
     `,
       (err, result) => {
         if (err) {
-          logger.log('error', 'Get group info error', { err });
+          logger.log('error', 'Get group info error', {
+            err
+          });
           res.sendStatus(400);
         }
 
@@ -72,7 +76,9 @@ router.route('/teacher/:fio').get((req, res, next) => {
     `,
       (err, result) => {
         if (err) {
-          logger.log('error', 'Get teacher info error', { err });
+          logger.log('error', 'Get teacher info error', {
+            err
+          });
           res.sendStatus(400);
         }
 
