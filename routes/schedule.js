@@ -309,7 +309,6 @@ router.route('/groups').get((req, res, next) => {
     if (err) res.sendStatus(400);
 
     const request = new sql.Request(pool);
-    request.input('group', sql.NVarChar, req.params.group);
     request.query(
       `
       SELECT distinct [Caf], [Group]
@@ -361,6 +360,33 @@ router.route('/groups').get((req, res, next) => {
         } catch (err) {
           res.sendStatus(400);
         }
+      },
+    );
+  });
+});
+
+router.route('/IdFromOneC/:fio').get((req, res, next) => {
+  pool.connect(err => {
+    if (err) res.sendStatus(400);
+
+    const request = new sql.Request(pool);
+    request.input('fio', sql.NVarChar, `%${req.params.fio}%`);
+    request.query(
+      `
+      SELECT
+      [Код] as ID
+        FROM [UniversityPROF].[dbo].[Справочник_ФизическиеЛица]
+        where [Наименование] like @fio
+        order by [Код]
+    `,
+      (err, result) => {
+        if (err) {
+          logger.log('error', 'Get teachers error', { err });
+          res.sendStatus(400);
+        }
+
+        pool.close();
+        res.send(result.recordset);
       },
     );
   });
