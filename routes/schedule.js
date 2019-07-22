@@ -372,12 +372,10 @@ router.route('/IdFromOneC/:fio').get((req, res, next) => {
     const request = new sql.Request(pool);
     request.input('fio', sql.NVarChar, `%${req.params.fio}%`);
     request.query(
-      `
-      SELECT
-      [Код] as ID
-        FROM [UniversityPROF].[dbo].[Справочник_ФизическиеЛица]
-        where [Наименование] like @fio
-        order by [Код]
+    `
+      SELECT *
+        FROM [UniversityPROF].[dbo].[Vestra_Код1С]
+        where [Name] like @fio
     `,
       (err, result) => {
         if (err) {
