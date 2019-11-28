@@ -206,11 +206,11 @@ function getCurrentDate() {
 
 //возврящает true, когда приемка работает (с 20 июня по 1 ноября)
 function admissionCommitteeInProcess() {
+  return true;
   let currentDate = getCurrentDate();
   if (currentDate.month < 6 || currentDate.month > 11) return false;
   if (currentDate.month == 6 && currentDate.day < 20) return false;
   if (currentDate.month == 11 && currentDate.day > 1) return false;
-  return true;
 }
 
 //возврящает предыдущий год до тех пор, пока не закончится приемка (1 ноября)
